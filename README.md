@@ -16,6 +16,47 @@ chunks are identified as follows, currently
 - 8: bone weights
 - 9: bind poses
 
+Changes to original format layout
+---
+no uints have been used, as it made the format harder to write (most variables like array Length are in int anyway)
+
+UVs: uv and uv2 are stored into one chunk, like so:
+```
+{
+  int uv count
+  int uv2 count
+  float uv 1.x
+  float uv 1.y
+  float uv 2.x
+  float uv 2.y
+  ...
+  float uv2 1.x
+  float uv2 1.y
+  float uv2 2.x
+  float uv2 2.y
+  ...
+}
+```
+Submeshes, by default, are used instead of triangles, as the mesh.triangles variable is identical to submesh[0]
+the format is stored like so
+```
+{
+    int mesh.subMeshCount
+    int submesh0 size
+    int submesh1 size
+    ...
+    int submesh0 tri0
+    int submesh0 tri1
+    int submesh0 tri2
+    ...
+    int submesh1 tri0
+    int submesh1 tri1
+    int submesh1 tri2
+    ...
+}
+```
+
+
 Build Instructions
 ====
 Open sln in visual studio, press f6. Should output to a bin folder in the root
