@@ -3,6 +3,19 @@ UnityMesh
 
 based heavily on this: http://forum.unity3d.com/threads/192077-Community-Format-Proposal-UNITYMESH?p=1309128#post1309128
 
+The format is as described later in the thread, with invididual data being separated into chunks, with each chunk having an identifier.
+
+chunks are identified as follows, currently
+- 1: vertices
+- 2: uvs
+- 3: triangles (not used by default)
+- 4: submeshes (used instead of triangles by default)
+- 5: normals
+- 6: tangents
+- 7: vertex colors
+- 8: bone weights
+- 9: bind poses
+
 Build Instructions
 ====
 Open sln in visual studio, press f6. Should output to a bin folder in the root
