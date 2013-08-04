@@ -26,14 +26,14 @@ namespace UnityMesh
 
         internal static unsafe void CopyBytes(int value, byte[] buffer, int offset)
         {
-            if (offset + sizeof(int) >= buffer.Length) throw new IndexOutOfRangeException();
+            if (offset + sizeof(int) > buffer.Length) throw new IndexOutOfRangeException();
 
             fixed (byte* numPtr = &buffer[offset])
                 *(int*) numPtr = value;
         }
         internal static unsafe void CopyBytes(float value, byte[] buffer, int offset)
         {
-            if (offset + sizeof(float) >= buffer.Length) throw new IndexOutOfRangeException();
+            if (offset + sizeof(float) > buffer.Length) throw new IndexOutOfRangeException();
 
             fixed (byte* numPtr = &buffer[offset])
                 *(float*)numPtr = value;
