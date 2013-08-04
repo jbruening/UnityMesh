@@ -25,15 +25,15 @@ UVs: uv and uv2 are stored into one chunk, like so:
 {
   int uv count
   int uv2 count
+  float uv 0.x
+  float uv 0.y
   float uv 1.x
   float uv 1.y
-  float uv 2.x
-  float uv 2.y
   ...
+  float uv2 0.x
+  float uv2 0.y
   float uv2 1.x
   float uv2 1.y
-  float uv2 2.x
-  float uv2 2.y
   ...
 }
 ```
