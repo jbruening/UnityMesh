@@ -56,17 +56,23 @@ namespace UnityMesh
             }
         }
 
+        public static Mesh Read(Stream stream, FileConfig config = null)
+        {
+            var mesh = new Mesh();
+            ReadInto(mesh, stream, config);
+            return mesh;
+        }
+
         /// <summary>
         /// Read a mesh from the specified stream
         /// </summary>
+        /// <param name="mesh"></param>
         /// <param name="stream"></param>
         /// <param name="config"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static Mesh Read(Stream stream, FileConfig config = null)
+        public static void ReadInto(Mesh mesh, Stream stream, FileConfig config = null)
         {
-            var mesh = new Mesh();
-
             if (config == null)
                 config = FileConfig.DefaultConfig();
 
@@ -121,8 +127,6 @@ namespace UnityMesh
                     }
                 }
             }
-
-            return mesh;
         }
     }
 }
