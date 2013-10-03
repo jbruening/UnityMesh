@@ -15,7 +15,7 @@ namespace UnityModel
             get { return _instance ?? (_instance = new SerializerFactory()); }
         }
 
-        readonly Dictionary<Type, object> _serializers = new Dictionary<Type, object>();
+        readonly Dictionary<Type, IObjectSerializer> _serializers = new Dictionary<Type, IObjectSerializer>();
         readonly Dictionary<int, Type> _typeMap = new Dictionary<int, Type>();
 
         internal readonly BiDictionary<int, Object> ReferenceMap = new BiDictionary<int, Object>();
@@ -25,11 +25,10 @@ namespace UnityModel
         public event Action DeserializeStart;
 
 
-        public void RegisterSerializer<T>(IObjectSerializer<T> serializer) where T : Object
+        public void RegisterSerializer(IObjectSerializer serializer)
         {
-            var type = typeof (T);
-            _serializers[type] = serializer;
-            _typeMap[serializer.TypeID] = type;
+            _serializers[serializer.Type] = serializer;
+            _typeMap[serializer.TypeID] = serializer.Type;
         }
 
         public void Serialize(Object obj, BinaryWriter writer)
@@ -59,16 +58,14 @@ namespace UnityModel
 
         internal void InternalSerialize(Object obj, ref BinaryWriter writer)
         {
-            object serializer;
+            IObjectSerializer serializer;
 
             ReferenceMap[_referenceKey++] = obj;
 
             if (!_serializers.TryGetValue(obj.GetType(), out serializer)) return;
 
-            var ser = serializer as IObjectSerializer<Object>;
-
-            writer.Write(ser.TypeID);
-            ser.Serialize(obj, ref writer, this);
+            writer.Write(serializer.TypeID);
+            serializer.Serialize(obj, ref writer, this);
         }
 
         internal Object InternalDeserialize(ref BinaryReader reader, Object parent)
@@ -79,8 +76,7 @@ namespace UnityModel
             Object ret = null;
             if (_typeMap.TryGetValue(typeID, out type))
             {
-                var ser = _serializers[type] as IObjectSerializer<Object>;
-                ret = ser.Deserialize(ref reader, parent, this);
+                ret = _serializers[type].Deserialize(ref reader, parent, this);
             }
 
             ReferenceMap[_referenceKey++] = ret;

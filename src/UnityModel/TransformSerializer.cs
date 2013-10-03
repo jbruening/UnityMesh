@@ -8,12 +8,11 @@ using Object = UnityEngine.Object;
 
 namespace UnityModel
 {
-    public class Transform : IObjectSerializer<UnityEngine.Transform>
+    public class TransformSerializer : IObjectSerializer
     {
-        
-        public void Serialize(Object obj, ref BinaryWriter writer, SerializerFactory serializerFactory)
+        void IObjectSerializer.Serialize(Object obj, ref BinaryWriter writer, SerializerFactory serializerFactory)
         {
-            var trans = obj as UnityEngine.Transform;
+            var trans = obj as Transform;
 
             //my id
             writer.Write(serializerFactory.ReferenceMap[trans]);
@@ -38,15 +37,15 @@ namespace UnityModel
 
             writer.Write(trans.childCount);
 
-            foreach (UnityEngine.Transform child in trans)
+            foreach (Transform child in trans)
             {
                 SerializerFactory.Instance.InternalSerialize(child.gameObject, ref writer);
             }
         }
 
-        public UnityEngine.Transform Deserialize(ref BinaryReader reader, Object parent, SerializerFactory serializerFactory)
+        Object IObjectSerializer.Deserialize(ref BinaryReader reader, Object parent, SerializerFactory serializerFactory)
         {
-            var par = parent as UnityEngine.GameObject;
+            var par = parent as GameObject;
             var trans = par.transform;
             //my id
             reader.ReadInt32();
@@ -54,7 +53,7 @@ namespace UnityModel
             var parId = reader.ReadInt32();
             if (parId != -1)
             {
-                trans.parent = serializerFactory.ReferenceMap[parId] as UnityEngine.Transform;
+                trans.parent = serializerFactory.ReferenceMap[parId] as Transform;
             }
 
             trans.localPosition = reader.ReadVector3();
@@ -76,6 +75,7 @@ namespace UnityModel
                 return trans;
         }
 
-        public int TypeID { get; private set; }
+        int IObjectSerializer.TypeID { get { return 1; } }
+        Type IObjectSerializer.Type { get { return typeof (Transform); } }
     }
 }
