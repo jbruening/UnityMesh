@@ -90,6 +90,7 @@ namespace UnityModel
             writer.BaseStream.Position = heiStartPoint - sizeof(long);
             //and write out the size
             writer.Write(heiSize);
+            writer.BaseStream.Position = heiEndPoint;
 
             //write component chunks
             foreach (var kvp in ComponentMap)
@@ -144,7 +145,7 @@ namespace UnityModel
                 }
                 else
                 {
-                    InternalDeserialize(ref reader, null);
+                    Deserialize(ref reader, null, chunkID);
                 }
             }
 
@@ -235,6 +236,11 @@ namespace UnityModel
         internal Object InternalDeserialize(ref BinaryReader reader, Object parent)
         {
             var typeID = reader.ReadInt32();
+            return Deserialize(ref reader, parent, typeID);
+        }
+
+        private Object Deserialize(ref BinaryReader reader, Object parent, int typeID)
+        {
             var size = reader.ReadInt64();
             var origiPos = reader.BaseStream.Position;
             var jumpPoint = size + origiPos;

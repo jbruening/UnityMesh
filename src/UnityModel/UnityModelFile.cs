@@ -45,15 +45,16 @@ namespace UnityModel
                     writer.Write(Version);
 
                     _serializer.Serialize(obj, writer);
-                }
 
-                ms.Position = 0;
-                //write memory to stream
-                var buffer = new byte[32 * 1024];
-                int bytesRead;
-                while ((bytesRead = ms.Read(buffer, 0, buffer.Length)) > 0)
-                {
-                    stream.Write(buffer, 0, bytesRead);
+
+                    ms.Position = 0;
+                    //write memory to stream
+                    var buffer = new byte[32*1024];
+                    int bytesRead;
+                    while ((bytesRead = ms.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        stream.Write(buffer, 0, bytesRead);
+                    }
                 }
             }
         }
@@ -74,7 +75,7 @@ namespace UnityModel
 
                 using (var reader = new BinaryReader(ms))
                 {
-                    var sig = reader.ReadBytes(3);
+                    var sig = reader.ReadBytes(FileHeader.Length);
                     if (FileHeader != Iso8859.GetString(sig))
                         throw new Exception("File did not have UnityModelFile header");
 
