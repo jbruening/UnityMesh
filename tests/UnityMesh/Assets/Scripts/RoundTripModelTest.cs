@@ -1,9 +1,8 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using UnityEngine;
 using UnityModel;
-using Component = UnityModel.Component;
-using GameObject = UnityModel.GameObject;
-using Transform = UnityModel.Transform;
+using Debug = UnityEngine.Debug;
 
 public class RoundTripModelTest : MonoBehaviour
 {
@@ -13,16 +12,24 @@ public class RoundTripModelTest : MonoBehaviour
     [ContextMenu("Run Test")]
     void DoTest()
     {
-        var factory = new SerializerFactory();
-        factory.RegisterSerializer(new GameObject());
-        factory.RegisterSerializer(new Transform());
+        var file = new UnityModelFile();
 
         using (var ms = new MemoryStream(4096))
         {
-            factory.Serialize(_testObject, new BinaryWriter(ms));
-
+            var watch = new Stopwatch();
+            
+            watch.Start();
+            file.Serialize(_testObject, ms);
+            watch.Stop();
+            
+            Debug.Log("Serialization took " + watch.Elapsed.ToString());
+            
+            watch.Start();
             ms.Position = 0;
-            factory.Deserialize(new BinaryReader(ms));
+            file.Deserialize(ms);
+            watch.Stop();
+            
+            Debug.Log(string.Format("round trip took {0}. Size is {1}", watch.Elapsed.ToString(), ms.Length));
         }
     }
 }

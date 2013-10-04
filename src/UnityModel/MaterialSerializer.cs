@@ -8,19 +8,19 @@ using Object = UnityEngine.Object;
 
 namespace UnityModel
 {
-    class MaterialSerializer : IObjectSerializer
+    class MaterialSerializer : AObjectSerializer<Material>
     {
-        void IObjectSerializer.Serialize(Object obj, ref BinaryWriter writer, SerializerFactory serializerFactory)
+        protected override void Serialize(Material obj, ref BinaryWriter writer, SerializerFactory serializerFactory)
         {
-            throw new NotImplementedException();
+            //TODO
         }
 
-        Object IObjectSerializer.Deserialize(ref BinaryReader reader, Object parent, SerializerFactory serializerFactory)
+        protected override Material Deserialize(ref BinaryReader reader, Object parent, SerializerFactory serializerFactory)
         {
-            throw new NotImplementedException();
+            //TODO
+            return null;
         }
 
-        int IObjectSerializer.TypeID { get { return 2; } }
-        Type IObjectSerializer.Type { get { return typeof (Material); } }
+        public override int TypeID { get { return 2; } }
     }
 }

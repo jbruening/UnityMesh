@@ -23,4 +23,27 @@ namespace UnityModel
 
         Type Type { get; }
     }
+
+    /// <summary>
+    /// a bit more rigidity to classes that would like to implement the interface
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public abstract class AObjectSerializer<T> : IObjectSerializer where T : Object
+    {
+        void IObjectSerializer.Serialize(Object obj, ref BinaryWriter writer, SerializerFactory serializerFactory)
+        {
+            Serialize(obj as T, ref writer, serializerFactory);
+        }
+
+        Object IObjectSerializer.Deserialize(ref BinaryReader reader, Object parent, SerializerFactory serializerFactory)
+        {
+            return Deserialize(ref reader, parent, serializerFactory);
+        }
+
+        protected abstract T Deserialize(ref BinaryReader reader, Object parent, SerializerFactory serializer);
+        protected abstract void Serialize(T obj, ref BinaryWriter writer, SerializerFactory serializer);
+
+        public abstract int TypeID { get; }
+        public Type Type { get { return typeof (T); } }
+    }
 }

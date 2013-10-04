@@ -1,0 +1,45 @@
+﻿File
+{
+	Header
+	{
+		char id (3 chars)
+		int version
+	}
+	Heiarchy
+	{
+		int typeid -2 //always less than -1
+		long bytesize
+
+		Transform
+		{
+			int objectid
+			string root name
+			Vector3 localposition
+			Quaternion localrotation
+			Vector3 localscale
+			int childcount
+			Children
+			{
+				Transform
+				{
+					etc...
+				}
+			}
+		}
+	}
+	Components
+	{
+		Component
+		{
+			int typeid //must be greater than 0
+			long bytesize
+			int containing objectid //id of the gameobject.transform that had this attached to it
+
+			etc data...
+		}
+		Component
+		{
+			etc...
+		}
+	}
+}
