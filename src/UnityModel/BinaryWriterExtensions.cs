@@ -20,6 +20,16 @@ namespace UnityModel
             return new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
         }
 
+        public static void Write(this BinaryWriter writer, Bounds bounds)
+        {
+            writer.Write(bounds.center);
+            writer.Write(bounds.size);
+        }
+        public static Bounds ReadBounds(this BinaryReader reader)
+        {
+            return new Bounds(reader.ReadVector3(), reader.ReadVector3());
+        }
+
         public static void Write(this BinaryWriter writer, Quaternion quaternion)
         {
             writer.Write(quaternion.x);
@@ -30,6 +40,18 @@ namespace UnityModel
         public static Quaternion ReadQuaternion(this BinaryReader reader)
         {
             return new Quaternion(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+        }
+
+        public static void Write(this BinaryWriter writer, Color color)
+        {
+            Color32 col = color;
+            var bytes = new[] {col.r, col.g, col.b, col.a};
+            writer.Write(bytes);
+        }
+        public static Color ReadColor(this BinaryReader reader)
+        {
+            var bytes = reader.ReadBytes(4);
+            return new Color32(bytes[0], bytes[1], bytes[2], bytes[3]);
         }
     }
 }

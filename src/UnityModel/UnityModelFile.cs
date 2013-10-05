@@ -39,29 +39,33 @@ namespace UnityModel
 
             using (var ms = new MemoryStream())
             {
-                using (var writer = new BinaryWriter(ms))
+                var writer = new BinaryWriter(ms);
+                try
                 {
                     writer.Write(Iso8859.GetBytes(FileHeader));
                     writer.Write(Version);
 
                     _serializer.Serialize(obj, writer);
+                }
+                finally
+                {
+                    //do not close the writer as it closes ms.
+                    writer.Flush();
+                }
 
-
-                    ms.Position = 0;
-                    //write memory to stream
-                    var buffer = new byte[32*1024];
-                    int bytesRead;
-                    while ((bytesRead = ms.Read(buffer, 0, buffer.Length)) > 0)
-                    {
-                        stream.Write(buffer, 0, bytesRead);
-                    }
+                ms.Position = 0;
+                //write memory to stream
+                var buffer = new byte[32*1024];
+                int bytesRead;
+                while ((bytesRead = ms.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    stream.Write(buffer, 0, bytesRead);
                 }
             }
         }
 
         public Object Deserialize(Stream stream)
         {
-
             using (var ms = new MemoryStream())
             {
                 //we're lazy and need byte counting. Load the whole thing into a memory stream.
@@ -73,18 +77,18 @@ namespace UnityModel
                 }
                 ms.Position = 0;
 
-                using (var reader = new BinaryReader(ms))
-                {
-                    var sig = reader.ReadBytes(FileHeader.Length);
-                    if (FileHeader != Iso8859.GetString(sig))
-                        throw new Exception("File did not have UnityModelFile header");
+                //not wrapped in using otherwise it closes the stream
+                var reader = new BinaryReader(ms);
 
-                    var version = reader.ReadByte();
-                    if (version != Version)
-                        throw  new Exception("File is version " + version + ". This is version " + Version);
+                var sig = reader.ReadBytes(FileHeader.Length);
+                if (FileHeader != Iso8859.GetString(sig))
+                    throw new Exception("File did not have UnityModelFile header");
 
-                    return _serializer.Deserialize(reader);
-                }
+                var version = reader.ReadByte();
+                if (version != Version)
+                    throw  new Exception("File is version " + version + ". This is version " + Version);
+
+                return _serializer.Deserialize(reader);
             }
         }
     }

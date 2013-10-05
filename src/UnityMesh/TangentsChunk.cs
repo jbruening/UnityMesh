@@ -5,7 +5,7 @@ namespace UnityMesh
 {
     public class TangentsChunk : Chunk
     {
-        const int VECTOR4_SIZE = sizeof(float) * 3;
+        const int VECTOR4_SIZE = sizeof(float) * 4;
 
         protected override void ReadChunk(byte[] chunkData, ref Mesh mesh)
         {

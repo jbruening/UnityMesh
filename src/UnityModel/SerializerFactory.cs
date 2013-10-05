@@ -98,7 +98,7 @@ namespace UnityModel
                 foreach (var comp in kvp.Value)
                 {
                     if (comp is Transform) continue; //transforms are already written in heiarchy
-                    InternalSerialize(obj, ref writer);
+                    InternalSerialize(comp, ref writer);
                 }
             }
         }
@@ -118,6 +118,7 @@ namespace UnityModel
             {
                 var chunkID = reader.ReadInt32();
                 
+                //TODO: delay all other chunk deserialization until after we get the heiarchy
                 if (chunkID == HEIARCHY_ID)
                 {
                     var heiSize = reader.ReadInt64();
@@ -135,11 +136,9 @@ namespace UnityModel
                                               correctPos));
                         }
 
-                        if (DebugEnabled)
-                        {
-                            Debug.LogWarning(string.Format("heirarchy under at position {0}, should be at {1}",
-                                                           actualPos, correctPos));
-                        }
+                        Debug.LogWarning(string.Format("heirarchy under at position {0}, should be at {1}",
+                                                        actualPos, correctPos));
+
                         reader.BaseStream.Position = correctPos;
                     }
                 }
@@ -210,8 +209,13 @@ namespace UnityModel
                 writer.Write(UNKNOWN_ID);
                 //no bytes
                 writer.Write(0L);
+                if (obj is Component)
+                    writer.Write(ReferenceMap[(obj as Component).transform]);
+                else
+                    writer.Write(-1);
+
                 if (DebugEnabled)
-                    Debug.LogWarning(string.Format("Encountered unknown type {0}. Wrote id of -1", obj.GetType().Name));
+                    Debug.Log(string.Format("Encountered unknown type {0}. Wrote id of -1", obj.GetType().Name));
                 return;
             }
 
@@ -219,6 +223,12 @@ namespace UnityModel
 
             //allocate space for the byte size
             writer.Write(0L);
+
+            //are we a component? then write our container object
+            if (obj is Component)
+                writer.Write(ReferenceMap[(obj as Component).transform]);
+            else
+                writer.Write(-1);
             
             //do the writing
             var beginPosition = writer.BaseStream.Position;
@@ -226,7 +236,7 @@ namespace UnityModel
             var endPosition = writer.BaseStream.Position;
 
             //write the size
-            writer.BaseStream.Position = beginPosition - sizeof(long);
+            writer.BaseStream.Position = beginPosition - sizeof(long) - sizeof(int); //backtrack to correct position
             writer.Write(endPosition - beginPosition);
 
             //and go forward again to where we should be at
@@ -242,22 +252,25 @@ namespace UnityModel
         private Object Deserialize(ref BinaryReader reader, Object parent, int typeID)
         {
             var size = reader.ReadInt64();
+            var transID = reader.ReadInt32();
+            Transform trans = null;
+            if (transID > -1)
+                trans = ReferenceMap[transID] as Transform;
+
+            Type type;
+            Object ret = null;
+            
             var origiPos = reader.BaseStream.Position;
             var jumpPoint = size + origiPos;
-            
-            Type type;
-
-            Object ret = null;
             if (typeID < 0)
             {
                 if (DebugEnabled)
-                    Debug.LogWarning("Encountered a typeid of " + typeID + ". This usually means the serializer did not recognize the type during serialization");
+                    Debug.Log("Encountered a typeid of " + typeID + ". This usually means the serializer did not recognize the type during serialization");
             }
             else if (_typeMap.TryGetValue(typeID, out type))
             {
-                ret = _serializers[type].Deserialize(ref reader, parent, this);
+                ret = _serializers[type].Deserialize(ref reader, trans ?? parent, this);
             }
-            
             var currentPos = reader.BaseStream.Position;
             
             //only jump if we have to
@@ -269,10 +282,7 @@ namespace UnityModel
                     throw new Exception(string.Format("Current position {0} went past the serialized jump point {1}", currentPos, jumpPoint));
                 }
                 
-                if (DebugEnabled)
-                {
-                    Debug.LogWarning(string.Format("Current position {0} is behind serialized jump point {1}. Jumping.", currentPos, jumpPoint));
-                }
+                Debug.LogWarning(string.Format("Current position {0} is behind serialized jump point {1}. Jumping.", currentPos, jumpPoint));
                 reader.BaseStream.Position = jumpPoint;
             }
 
