@@ -56,6 +56,12 @@ the format is stored like so
 }
 ```
 
+UnityModel
+===
+A format for storing models with components attached.
+
+Format layout is subject to change
+
 
 Build Instructions
 ====
